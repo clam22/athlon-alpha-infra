@@ -6,8 +6,12 @@ terraform {
       version = "~> 6.30"
     }
   }
-  backend "local" {
-    path = "terraform.tfstate"
+  backend "s3" {
+    bucket = "athlon-alpha-terraform-state"
+    key = "pipeline/frontend/terraform.tfstate"
+    region = "eu-north-1"
+    dynamodb_table = "terraform-locks"
+    encrypt = true
   }
 }
 

@@ -8,7 +8,7 @@ terraform {
   }
   backend "s3" {
     bucket = "athlon-alpha-terraform-state"
-    key = "dev/terraform.tfstate"
+    key = "staging/terraform.tfstate"
     region = "eu-north-1"
     dynamodb_table = "terraform-locks"
     encrypt = true

@@ -1,3 +1,5 @@
+#FrontEnd
+#S3 Static Website Bucket
 module "s3" {
   source      = "../../modules/s3"
   bucket_name = "athlon-alpha-website-${var.environment}"
@@ -9,4 +11,7 @@ module "s3" {
   enable_static_website_hosting = var.enable_static_website_hosting
   allow_public_bucket_access    = var.allow_public_bucket_access
 }
+
+#Backend
+#Amazon ecr (PRAVITE)
 
