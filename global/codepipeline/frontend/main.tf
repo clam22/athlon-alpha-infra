@@ -1,7 +1,7 @@
-module "aws_codestar_connection" {
-  source        = "../../../modules/code-star-connection"
-  name          = var.codestar_connection_name
-  provider_type = var.codestar_connection_provider_type
+module "aws_codeconnection" {
+  source        = "../../../modules/code-connection"
+  name          = var.codeconnection_name
+  provider_type = var.codeconnection_provider_type
 }
 
 module "s3_artifact_bucket" {
@@ -60,13 +60,13 @@ data "aws_iam_policy_document" "codepipeline_policy" {
   }
 
   statement {
-    sid    = "UseCodeStarConnection"
+    sid    = "UseCodeConnection"
     effect = "Allow"
     actions = [
-      "codestar-connections:UseConnection"
+      "codeconnections:UseConnection"
     ]
     resources = [
-      module.aws_codestar_connection.codestar_connection_arn
+      module.aws_codeconnection.connection_arn
     ]
   }
 
@@ -95,7 +95,7 @@ module "codepipeline_iam_role" {
 
 resource "aws_codepipeline" "frontend_pipeline" {
   depends_on = [
-    module.aws_codestar_connection,
+    module.aws_codeconnection,
     module.codepipeline_iam_role,
     module.s3_artifact_bucket,
     module.code_build_project
@@ -120,7 +120,7 @@ resource "aws_codepipeline" "frontend_pipeline" {
       version          = "1"
       output_artifacts = ["source_output"]
       configuration = {
-        ConnectionArn    = module.aws_codestar_connection.codestar_connection_arn
+        ConnectionArn    = module.aws_codeconnection.connection_arn
         FullRepositoryId = "clam22/athlon-alpha-fe"
         BranchName       = "main"
       }

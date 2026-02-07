@@ -3,23 +3,23 @@ variable "artifact_bucket_name" {
   type        = string
 }
 
-variable "codestar_connection_name" {
+variable "codeconnection_name" {
   description = "The name for CodeStar connection"
   type        = string
 }
 
-variable "codestar_connection_provider_type" {
+variable "codeconnection_provider_type" {
   description = "The provider type for the CodeStar connection"
   type        = string
 }
 
 variable "website_bucket_name" {
   description = "The bucket name of the static website"
-  type = string
+  type        = string
 }
 
 variable "full_repository_id" {
   description = "The ID of the respository"
-  type = string
+  type        = string
 }
 

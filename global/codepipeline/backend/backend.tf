@@ -7,11 +7,11 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = "athlon-alpha-terraform-state"
-    key = "pipeline/backend/terraform.tfstate"
-    region = "eu-north-1"
+    bucket         = "athlon-alpha-terraform-state"
+    key            = "pipeline/backend/terraform.tfstate"
+    region         = "eu-north-1"
     dynamodb_table = "terraform-locks"
-    encrypt = true
+    encrypt        = true
   }
 }
 
