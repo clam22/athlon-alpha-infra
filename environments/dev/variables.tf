@@ -38,3 +38,13 @@ variable "enable_static_website_hosting" {
   type        = bool
   default     = true
 }
+
+variable "db_username" {
+  description = "The username of the RDS database"
+  type        = string
+}
+
+variable "db_password" {
+  description = "The username of the RDS database"
+  type        = string
+}

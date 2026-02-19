@@ -39,11 +39,28 @@ data "aws_iam_policy_document" "codebuild_permissions_policy_document" {
       "arn:aws:logs:eu-north-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/codebuild/*"
     ]
   }
+
+  statement {
+    sid    = "ECRAccess"
+    effect = "Allow"
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+      "ecr:PutImage"
+    ]
+    resources = ["*"]
+  }
 }
 
 module "code_build_iam_role" {
   source                       = "../iam-role"
   service_name                 = "codebuild"
+  role_name                    = "${var.build_name}-codebuild-role"
   iam_service_role_policy_json = data.aws_iam_policy_document.codebuild_permissions_policy_document.json
 }
 
@@ -63,7 +80,15 @@ resource "aws_codebuild_project" "codebuild_project" {
     compute_type    = "BUILD_GENERAL1_SMALL"
     image           = "aws/codebuild/standard:7.0"
     type            = "LINUX_CONTAINER"
-    privileged_mode = false
+    privileged_mode = true
+
+    dynamic "environment_variable" {
+      for_each = var.environment_variables
+      content {
+        name  = environment_variable.key
+        value = environment_variable.value
+      }
+    }
   }
 
   logs_config {

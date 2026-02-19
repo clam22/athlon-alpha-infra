@@ -5,8 +5,9 @@ module "aws_codeconnection" {
 }
 
 module "s3_artifact_bucket" {
-  source      = "../../../modules/s3"
-  bucket_name = var.artifact_bucket_name
+  source                     = "../../../modules/s3"
+  bucket_name                = "athlon-alpha-frontend-pipeline-artifacts"
+  allow_public_bucket_access = true
 }
 
 module "code_build_project" {
@@ -63,7 +64,8 @@ data "aws_iam_policy_document" "codepipeline_policy" {
     sid    = "UseCodeConnection"
     effect = "Allow"
     actions = [
-      "codeconnections:UseConnection"
+      "codeconnections:UseConnection",
+      "codestar-connections:UseConnection"
     ]
     resources = [
       module.aws_codeconnection.connection_arn
@@ -90,6 +92,7 @@ data "aws_iam_policy_document" "codepipeline_policy" {
 module "codepipeline_iam_role" {
   source                       = "../../../modules/iam-role"
   service_name                 = "codepipeline"
+  role_name                    = "frontend-codepipeline-role"
   iam_service_role_policy_json = data.aws_iam_policy_document.codepipeline_policy.json
 }
 

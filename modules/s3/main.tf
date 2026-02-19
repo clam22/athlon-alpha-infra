@@ -47,6 +47,7 @@ data "aws_iam_policy_document" "bucket_resource_policy" {
 }
 
 resource "aws_s3_bucket_policy" "general_bucket_policy" {
+  count  = var.allow_public_bucket_access ? 1 : 0
   bucket = aws_s3_bucket.general_bucket.id
   policy = data.aws_iam_policy_document.bucket_resource_policy.json
 }

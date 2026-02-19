@@ -4,4 +4,6 @@ resource "aws_ecr_repository" "private_repository" {
   image_scanning_configuration {
     scan_on_push = var.allow_scan_on_push
   }
+  force_delete = true
+
 }
