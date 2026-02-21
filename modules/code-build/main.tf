@@ -28,6 +28,33 @@ data "aws_iam_policy_document" "codebuild_permissions_policy_document" {
   }
 
   statement {
+    sid = "EC2InstanceAccess"
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeVpcs",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DeleteNetworkInterface",
+      "ec2:CreateNetworkInterface",
+      "ec2:CreateNetworkInterfacePermission",
+      "ec2:DescribeDhcpOptions"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "CodeBuildReporting"
+    actions = [
+      "codebuild:CreateReportGroup",
+      "codebuild:CreateReport",
+      "codebuild:UpdateReport",
+      "codebuild:BatchPutTestCases"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
     sid    = "CloudWatchLogsAccess"
     effect = "Allow"
     actions = [
@@ -70,6 +97,7 @@ resource "aws_codebuild_project" "codebuild_project" {
 
   source {
     type = "CODEPIPELINE"
+    buildspec = var.buildspec_file_name
   }
 
   artifacts {
@@ -81,6 +109,7 @@ resource "aws_codebuild_project" "codebuild_project" {
     image           = "aws/codebuild/standard:7.0"
     type            = "LINUX_CONTAINER"
     privileged_mode = true
+    
 
     dynamic "environment_variable" {
       for_each = var.environment_variables
@@ -89,6 +118,12 @@ resource "aws_codebuild_project" "codebuild_project" {
         value = environment_variable.value
       }
     }
+  }
+
+  vpc_config {
+    vpc_id = var.vpc_id
+    subnets = var.subnet_ids
+    security_group_ids = var.security_group_ids
   }
 
   logs_config {

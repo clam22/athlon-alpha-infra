@@ -42,9 +42,12 @@ variable "enable_static_website_hosting" {
 variable "db_username" {
   description = "The username of the RDS database"
   type        = string
+  sensitive = true
+  
 }
 
 variable "db_password" {
-  description = "The username of the RDS database"
+  description = "The password of the RDS database"
   type        = string
+  sensitive = true
 }

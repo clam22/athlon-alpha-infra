@@ -9,19 +9,44 @@ module "s3_artifact_bucket" {
   allow_public_bucket_access = true
 }
 
-module "code_build_project" {
-  source              = "../../../modules/code-build"
-  build_name          = "athlon-alpha-backend-build"
+module "code_migrations_project" {
+  source = "../../../modules/code-build"
+  build_name = "athlon-alpha-backend-migrations"
   artifact_bucket_arn = module.s3_artifact_bucket.bucket_arn
+  buildspec_file_name = "migrationsspec.yml"
+  vpc_id = data.terraform_remote_state.dev_env_state_file.outputs.vpc_id
+  security_group_ids = data.terraform_remote_state.dev_env_state_file.outputs.codepipeline_security_group_ids
+  subnet_ids = data.terraform_remote_state.dev_env_state_file.outputs.private_app_subnet_ids
+  environment_variables = {
+    "ConnectionStrings__DatabaseConnection" = "Host=${local.db_hostname};Port=${local.db_port};Database=${local.db_name};Username=${local.db_user};Password=${local.db_password};"
+  }
+}
+
+module "code_testing_project" {
+  source = "../../../modules/code-build"
+  build_name = "athlon-alpha-backend-testing"
+  artifact_bucket_arn = module.s3_artifact_bucket.bucket_arn
+  buildspec_file_name = "testspec.yml"
+  vpc_id = data.terraform_remote_state.dev_env_state_file.outputs.vpc_id
+  security_group_ids = data.terraform_remote_state.dev_env_state_file.outputs.codepipeline_security_group_ids
+  subnet_ids = data.terraform_remote_state.dev_env_state_file.outputs.private_app_subnet_ids
+}
+
+module "code_push_ecr_project" {
+  source = "../../../modules/code-build"
+  build_name = "athlon-alpha-backend-ecr"
+  artifact_bucket_arn = module.s3_artifact_bucket.bucket_arn
+  buildspec_file_name = "ecrspec.yml"
+  vpc_id = data.terraform_remote_state.dev_env_state_file.outputs.vpc_id
+  security_group_ids = data.terraform_remote_state.dev_env_state_file.outputs.codepipeline_security_group_ids
+  subnet_ids = data.terraform_remote_state.dev_env_state_file.outputs.private_app_subnet_ids
   environment_variables = {
     "REPOSITORY_URI"     = data.terraform_remote_state.registry_state_file.outputs.repository_url
     "AWS_DEFAULT_REGION" = "eu-north-1"
   }
 }
 
-data "aws_caller_identity" "current" {
-
-}
+data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "codepipeline_policy" {
   statement {
@@ -45,9 +70,12 @@ data "aws_iam_policy_document" "codepipeline_policy" {
     actions = [
       "codebuild:StartBuild",
       "codebuild:BatchGetBuilds",
+      "codebuild:CreateReportGroup"
     ]
     resources = [
-      module.code_build_project.code_build_project_arn
+      module.code_push_ecr_project.arn,
+      module.code_testing_project.arn,
+      module.code_migrations_project.arn
     ]
   }
 
@@ -58,7 +86,9 @@ data "aws_iam_policy_document" "codepipeline_policy" {
       "iam:PassRole"
     ]
     resources = [
-      module.code_build_project.code_build_project_arn,
+      module.code_testing_project.arn,
+      module.code_migrations_project.arn,
+      module.code_push_ecr_project.arn,
       "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/ecs-task-execution-role"
     ]
     condition {
@@ -116,7 +146,7 @@ resource "aws_codepipeline" "backend_pipeline" {
     name = "Source"
 
     action {
-      name             = "GitHub_Source"
+      name             = "PullFromGithub"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeStarSourceConnection"
@@ -131,10 +161,36 @@ resource "aws_codepipeline" "backend_pipeline" {
   }
 
   stage {
-    name = "Build"
+    name = "Testing"
 
     action {
-      name             = "Build_Dot_Net"
+      name = "RunTests"
+      category = "Test"
+      owner = "AWS"
+      provider = "CodeBuild"
+      version = "1"
+      input_artifacts = ["source_output"]
+      configuration = {
+        ProjectName = module.code_testing_project.name
+      }
+    }
+  }
+
+  stage {
+    name = "Build"
+    action {
+      name = "RunMigrations"
+      category = "Build"
+      owner = "AWS"
+      provider = "CodeBuild"
+      version = "1"
+      input_artifacts = ["source_output"]
+      configuration = {
+        ProjectName = module.code_migrations_project.name
+      }
+    }
+    action {
+      name             = "PushToECR"
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
@@ -143,16 +199,16 @@ resource "aws_codepipeline" "backend_pipeline" {
       output_artifacts = ["build_output"]
 
       configuration = {
-        ProjectName = module.code_build_project.code_build_project_name
+        ProjectName = module.code_push_ecr_project.name
       }
     }
   }
 
   stage {
-    name = "DeploymentDevEnv"
+    name = "DevEnvDeployment"
 
     action {
-      name            = "DeployECS"
+      name            = "DeployToECS"
       category        = "Deploy"
       owner           = "AWS"
       provider        = "ECS"

@@ -1,3 +1,8 @@
+output "vpc_id" {
+  description = "The value of the VPC ID"
+  value = aws_vpc.vpc.id
+}
+
 output "ecs_instance_security_group_ids" {
   description = "A list of security group IDs for ECS Instances"
   value       = [aws_security_group.ecs_instances_sg.id]
@@ -11,6 +16,11 @@ output "rds_security_group_ids" {
 output "redis_security_group_ids" {
   description = "A list of security group IDs for Redis Cache Cluster"
   value       = [aws_security_group.redis_sg.id]
+}
+
+output "codebuild_security_group_ids" {
+  description = "A list of security group IDs for the CodeBuild Project"
+  value = [aws_security_group.codebuild_sg.id]
 }
 
 output "private_app_subnet_ids" {

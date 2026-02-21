@@ -98,7 +98,7 @@ resource "aws_route_table_association" "private_data_assoc" {
 }
 
 resource "aws_security_group" "ecs_instances_sg" {
-  name        = "ecs_instances_sg"
+  name        = "ecs-instances-sg"
   description = "Security group for ECS EC2 instances"
   vpc_id      = aws_vpc.vpc.id
 
@@ -115,7 +115,18 @@ resource "aws_security_group" "ecs_instances_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
 
+resource "aws_security_group" "codebuild_sg" {
+  name = "codebuild-instances-sg"
+  description = "Security group for CodeBuild instances"
+  vpc_id = aws_vpc.vpc.id
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_security_group" "rds_sg" {
@@ -127,14 +138,7 @@ resource "aws_security_group" "rds_sg" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [aws_security_group.ecs_instances_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.ecs_instances_sg.id, aws_security_group.codebuild_sg.id]
   }
 }
 
