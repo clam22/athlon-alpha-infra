@@ -68,3 +68,17 @@ output "codepipeline_security_group_ids" {
   value = module.network.codebuild_security_group_ids
 }
 
+output "cognito_user_pool_id" {
+  value = module.cognito.user_pool_id
+  sensitive = true
+}
+
+output "cognito_client_id" {
+  value = module.cognito.client_id
+  sensitive = true
+}
+
+output "cognito_client_secret" {
+  value = module.cognito.client_id
+  sensitive = true
+}

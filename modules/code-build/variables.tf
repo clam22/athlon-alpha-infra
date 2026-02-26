@@ -27,13 +27,17 @@ variable "buildspec_file_name" {
 variable "vpc_id" {
   description = "The value of the VPC ID"
   type = string
+  default = ""
 }
 
 variable "subnet_ids" {
   description = "A list VPC IDs for CodeBuild Project to run in"
   type = list(string)
+  default = []
 }
 
 variable "security_group_ids" {
   description = "A list of security of Security Groups for CodeBuild Project to run in"
+  type = list(string)
+  default = []
 }
