@@ -19,6 +19,12 @@ module "network" {
   vpc_instance_tenancy = "default"
 }
 
+#Cognito User Pool
+module "cognito" {
+  source = "../../modules/cognito"
+  environment = var.environment
+}
+
 #RDS Database
 module "rds_postgresql" {
   source             = "../../modules/rds"
@@ -54,8 +60,8 @@ module "ecs_cluster" {
   redis_endpoint     = module.redis_cache.redis_endpoint
   redis_port         = module.redis_cache.redis_port
   target_group_arn   = module.network.lb_target_group_arn
+  cognito_pool_arn = module.cognito.arn
   depends_on         = [module.network, module.rds_postgresql, module.redis_cache]
-
 }
 
 

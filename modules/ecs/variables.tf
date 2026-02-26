@@ -59,6 +59,11 @@ variable "redis_port" {
 }
 
 variable "target_group_arn" {
-  description = "The ARN of the Load Balancer"
+  description = "The ARN of the Load Balancer Target Group"
   type        = string
+}
+
+variable "cognito_pool_arn" {
+  description = "The ARN of the Codgnito Pool"
+  type = string
 }

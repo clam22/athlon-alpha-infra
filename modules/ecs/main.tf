@@ -84,6 +84,20 @@ data "aws_iam_policy_document" "ecs_ec2_instance_policy" {
       "arn:aws:ecs:*:*:task/*/*",
     "arn:aws:ecs:*:*:container-instance/*/*"]
   }
+
+  statement {
+    sid = "CognitoAccess"
+    effect = "Allow"
+    actions = [
+      "cognito-idp:AdminAddUserToGroup",
+      "cognito-idp:AdminDeleteUser",
+      "cognito-idp:AdminCreateUser",
+      "cognito-idp:AdminRemoveUserFromGroup"
+    ]
+    resources = [
+      var.cognito_pool_arn
+    ]
+  }
 }
 
 module "ecs_ec2_instance_role" {
