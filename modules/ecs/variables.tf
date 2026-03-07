@@ -3,6 +3,11 @@ variable "environment" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "Region for provisoning"
+  type = string
+}
+
 variable "subnet_ids" {
   description = "List of subnet IDs to launch ec2 instances in"
   type        = list(string)
@@ -64,6 +69,27 @@ variable "target_group_arn" {
 }
 
 variable "cognito_pool_arn" {
-  description = "The ARN of the Codgnito Pool"
+  description = "The ARN of the Cognito Pool"
+  type = string
+}
+
+variable "cognito_user_pool_id" {
+  description = "The value of the Cognito User Pool"
+  type = string
+}
+
+variable "cognito_client_id" {
+  description = "The value of the Cognito User Pool"
+  type = string
+}
+
+variable "cognito_client_secret_arn" {
+  description = "The ARN of the Secrets Manager Cogntio Client Secret"
+  type = string
+  sensitive = true
+}
+
+variable "frontend_endpoint" {
+  description = "The URL for the frontend website"
   type = string
 }

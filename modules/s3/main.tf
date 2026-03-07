@@ -25,7 +25,15 @@ resource "aws_s3_bucket_website_configuration" "website_bucket_configuration" {
   }
 }
 
-
+resource "aws_s3_object" "website_config" {
+  count  = var.enable_static_website_hosting ? 1 : 0
+  bucket = aws_s3_bucket.general_bucket.bucket
+  key = "config.json"
+  content = jsonencode({
+    API_URL = var.api_url
+  })
+  content_type = "application/json"
+}
 
 data "aws_iam_policy_document" "bucket_resource_policy" {
   statement {

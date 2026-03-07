@@ -82,3 +82,11 @@ output "cognito_client_secret" {
   value = module.cognito.client_id
   sensitive = true
 }
+
+output "api_url" {
+  value = module.network.lb_dns_name
+}
+
+output "frontend_endpoint" {
+  value = module.s3.website_url
+}

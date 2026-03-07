@@ -8,6 +8,7 @@ module "s3_artifact_bucket" {
   source                     = "../../../modules/s3"
   bucket_name                = "athlon-alpha-frontend-pipeline-artifacts"
   allow_public_bucket_access = true
+  
 }
 
 module "code_build_project" {
@@ -40,7 +41,7 @@ data "aws_iam_policy_document" "codepipeline_policy" {
       "codebuild:BatchGetBuilds",
     ]
     resources = [
-      module.code_build_project.code_build_project_arn
+      module.code_build_project.arn
     ]
   }
 
@@ -51,7 +52,7 @@ data "aws_iam_policy_document" "codepipeline_policy" {
       "iam:PassRole"
     ]
     resources = [
-      module.code_build_project.code_build_project_arn
+      module.code_build_project.arn
     ]
     condition {
       test     = "StringEquals"
@@ -143,7 +144,7 @@ resource "aws_codepipeline" "frontend_pipeline" {
       output_artifacts = ["build_output"]
 
       configuration = {
-        ProjectName = module.code_build_project.code_build_project_name
+        ProjectName = module.code_build_project.name
       }
     }
   }

@@ -10,6 +10,8 @@ module "s3" {
   error_document_key            = var.website_error_document_key
   enable_static_website_hosting = var.enable_static_website_hosting
   allow_public_bucket_access    = var.allow_public_bucket_access
+  api_url = "http://${module.network.lb_dns_name}"
+  depends_on = [ module.network ]
 }
 
 #Backend
@@ -18,6 +20,7 @@ module "network" {
   source               = "../../modules/network"
   vpc_instance_tenancy = "default"
 }
+
 
 #Cognito User Pool
 module "cognito" {
@@ -45,10 +48,22 @@ module "redis_cache" {
   depends_on         = [module.network]
 }
 
+#CognitoClientSecret Secrets Manager
+resource "aws_secretsmanager_secret" "cognito_client_secret" {
+  name = "athlon/${var.environment}/cognito/client-secret"
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "cognito_client_secret" {
+  secret_id = aws_secretsmanager_secret.cognito_client_secret.id
+  secret_string = module.cognito.client_secret
+}
+
 #ECS Cluster
 module "ecs_cluster" {
   source             = "../../modules/ecs"
   environment        = var.environment
+  aws_region = var.aws_region
   ecr_repository_url = data.terraform_remote_state.registry_state_file.outputs.repository_url
   subnet_ids         = module.network.private_app_subnet_ids
   security_group_ids = module.network.ecs_instance_security_group_ids
@@ -61,6 +76,10 @@ module "ecs_cluster" {
   redis_port         = module.redis_cache.redis_port
   target_group_arn   = module.network.lb_target_group_arn
   cognito_pool_arn = module.cognito.arn
+  cognito_user_pool_id = module.cognito.user_pool_id
+  cognito_client_id = module.cognito.client_id
+  cognito_client_secret_arn = aws_secretsmanager_secret.cognito_client_secret.arn
+  frontend_endpoint = "http://${module.s3.website_url}"
   depends_on         = [module.network, module.rds_postgresql, module.redis_cache]
 }
 

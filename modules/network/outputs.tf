@@ -42,3 +42,7 @@ output "lb_target_group_arn" {
   description = "The Load Balancer Target group"
   value       = aws_lb_target_group.api.arn
 }
+output "lb_dns_name" {
+  description = "The name of the Application Load Balancer"
+  value = aws_lb.alb.dns_name
+}
