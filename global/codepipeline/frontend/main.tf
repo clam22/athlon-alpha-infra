@@ -117,7 +117,7 @@ resource "aws_codepipeline" "frontend_pipeline" {
     name = "Source"
 
     action {
-      name             = "GitHub_Source"
+      name             = "PullFromGithub"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeStarSourceConnection"
@@ -135,7 +135,7 @@ resource "aws_codepipeline" "frontend_pipeline" {
     name = "Build"
 
     action {
-      name             = "Build_React"
+      name             = "RunBuild"
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
@@ -150,10 +150,10 @@ resource "aws_codepipeline" "frontend_pipeline" {
   }
 
   stage {
-    name = "DeployDev"
+    name = "DeployDevDeployment"
 
     action {
-      name            = "DeployDev"
+      name            = "DevToS3"
       category        = "Deploy"
       owner           = "AWS"
       provider        = "S3"
