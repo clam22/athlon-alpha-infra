@@ -21,7 +21,7 @@ variable "environment_variables" {
 variable "buildspec_file_name" {
   description = "The name of the buildspec.yml file"
   type = string
-  default = "buldspec.yml"
+  default = "buildspec.yml"
 }
 
 variable "vpc_id" {

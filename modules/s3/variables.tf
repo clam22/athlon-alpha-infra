@@ -41,3 +41,8 @@ variable "allow_public_bucket_access" {
   }
 }
 
+variable "api_url" {
+  description = "The value of the URL for the APIs"
+  type = string
+  default = ""
+}

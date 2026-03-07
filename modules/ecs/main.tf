@@ -198,6 +198,15 @@ data "aws_iam_policy_document" "ecs_task_execution_policy_document" {
     ]
     resources = ["*"]
   }
+
+  statement {
+    sid = "SecretsManagerAccess"
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+    resources = ["*"]
+  }
 }
 
 module "ecs_task_execution_role" {
@@ -206,6 +215,7 @@ module "ecs_task_execution_role" {
   service_name                 = "ecs-tasks"
   iam_service_role_policy_json = data.aws_iam_policy_document.ecs_task_execution_policy_document.json
 }
+
 
 
 resource "aws_ecs_task_definition" "task_definition" {
@@ -254,7 +264,30 @@ resource "aws_ecs_task_definition" "task_definition" {
         {
           name  = "ConnectionStrings__RedisConnection"
           value = "${var.redis_endpoint}:${var.redis_port}"
+        },
+        {
+          name = "Cognito__UserPoolId",
+          value= var.cognito_user_pool_id
+        },
+        {
+          name = "Cognito__ClientId",
+          value = var.cognito_client_id
+        },
+        {
+          name = "Cognito__Region", 
+          value = var.aws_region
+        },
+        {
+          name = "Frontend__Url"
+          value = var.frontend_endpoint
         }
+      ]
+      
+      secrets = [
+        {
+        name      = "Cognito__ClientSecret"
+        valueFrom = var.cognito_client_secret_arn
+      }
       ]
     }
   ])
