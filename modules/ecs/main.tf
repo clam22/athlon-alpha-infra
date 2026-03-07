@@ -130,13 +130,9 @@ resource "aws_launch_template" "ecs_ec2_launch_template" {
 
   user_data = base64encode(<<EOF
 #!/bin/bash
-echo "Done 1"
 mkdir -p /etc/ecs
-echo "Done 2"
 echo "ECS_CLUSTER=${aws_ecs_cluster.cluster.name}" | sudo tee /etc/ecs/ecs.config
-echo "Done 3"
 sudo systemctl enable ecs
-echo "Done 4"
 EOF
   )
 }
@@ -153,6 +149,7 @@ resource "aws_autoscaling_group" "ec2_autscaling_group" {
   }
 
   vpc_zone_identifier = var.subnet_ids
+  force_delete = true
 }
 
 resource "aws_ecs_capacity_provider" "ec2_capacity" {
