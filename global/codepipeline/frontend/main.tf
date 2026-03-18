@@ -159,7 +159,6 @@ resource "aws_codepipeline" "frontend_pipeline" {
       provider        = "S3"
       version         = "1"
       input_artifacts = ["build_output"]
-
       configuration = {
         BucketName = "${var.website_bucket_name}-dev"
         Extract    = "true"
